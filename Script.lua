@@ -409,7 +409,7 @@ spawn(function() -- AutoFarm
 end)
 
 spawn(function() -- AutoSuperFarm
-	while wait(2) do
+	while wait(1) do
 		if getgenv().AutoSuperFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins("Super Farm", getgenv().SelectedArea, getgenv().BlacklistedCoins)
@@ -511,11 +511,12 @@ local Label = Tab:Label({name = "Psx Script By Karwa#1132"})
 local ReloadServer = Tab:Button({name = "Reload Server", callback = function() 
 	ReloadServer()
 end})
+local DestroyBtn = Tab:Button({name = "Destroy UI", callback = function() main:DestroyUI() end})
 
 local FarmingSection = TabFarm:Section({name = "Farming"})
 
 local AutoFarm = FarmingSection:Toggle({name = "Auto Farm", callback = function(v) getgenv().AutoFarm = (v) end})
-local AutoSuperFarm = FarmingSection:Toggle({name = "Auto Super Farm", callback = function(v) getgenv().AutoSuperFarm = (v) end})
+local AutoSuperFarm = FarmingSection:Toggle({name = "Super Farm", callback = function(v) getgenv().AutoSuperFarm = (v) end})
 local AutoFarmMode = FarmingSection:Dropdown({name = "Farming Mode", callback = function(v) getgenv().FarmingMode = (v) end})
 AutoFarmMode:Add("Deafult", 1)
 AutoFarmMode:Add("Highest Coin Multiplier", 2)
