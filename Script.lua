@@ -11,12 +11,10 @@ getgenv().AutoOrbs = false
 getgenv().AutoEgg = false
 getgenv().AutoFarmSuper = false
 getgenv().AutoFarmMulti = false
-getgenv().AutoFarmNormal = false
+getgenv().AutoFarm = false
 getgenv().AutoSendAllPets = false
 getgenv().AutoGifts = false
-getgenv().SelectedAreaFarm = nil
 getgenv().WaitBeforeChangingCoin = 1
-getgenv().FarmingMode = "Coin Multiplier"
 getgenv().NameToEnchant = "Enchant"
 getgenv().AutoEnchant = false
 getgenv().AutoTripleCoin = false
@@ -254,7 +252,7 @@ getgenv().Octuple = false
 --OpenEgg("Tropical Doodle Egg", getgenv().Triple, getgenv().Octuple)
 
 spawn(function() --EggLoop
-	while wait(0.11) do
+	while wait(0.2) do
 		if getgenv().HatchMode == "Triple" then
 			getgenv().Triple = true
 			getgenv().Octuple = false
@@ -272,28 +270,6 @@ spawn(function() --EggLoop
 end)
 
 
-
-	
-function GetPetsTable()
-	local PetsEquipped = {}
-	for i, v in pairs(lib.PetCmds.GetEquipped()) do
-		table.insert(PetsEquipped, v.uid)
-	end
-	return PetsEquipped
-end
-
-for i, v in pairs(GetPetsTable()) do
-	print(i, v)
-end
-
-function JoinCoin(CoinID, PetID)
-	lib.Network.Invoke("Join Coin", CoinID, PetID)
-end
-
-function FarmCoin(CoinID, PetID)
-	lib.Network.Fire("Farm Coin", CoinID, PetID)
-end
-
 function Enchant(petid)
 	lib.Network.Invoke("Enchant Pet", petid, false)
 end
@@ -306,94 +282,143 @@ function Teleport(EggName)
 		end
 	end
 end
+--//[<Farming Stuff>]
 
-spawn(function()
-	while wait(0.15) do
-		if getgenv().AutoFarmNormal then
-			if #GetPetsTable() ~= 0 then
-				if getgenv().SelectedAreaFarm ~= nil then
-					if lib.Network.Invoke("Get Coins") ~= nil then
-						for i, v in pairs(lib.Network.Invoke("Get Coins")) do
-							if v.a == getgenv().SelectedAreaFarm then
-								if getgenv().FarmingMode == "Coin Multiplier" then
-									if v.b == nil then	
-										Coinid = i
-										CoinArea = v.a
-									else
-										for I, V in pairs(v.b) do
-											Coinid = i
-											CoinArea = v.a
-											multiplier = V[1].m
-										end	
-									end
-								end
-							end
-						end
-						JoinCoin(Coinid, GetPetsTable())
-						for i, v in pairs(GetPetsTable()) do
-							FarmCoin(Coinid, v)
-						end
+function JoinCoin(Coinid, PetTable)
+	lib.Network.Invoke("Join Coin", Coinid, PetTable)
+end
+
+function FarmCoin(Coinid, PetTable)
+	for i, v in pairs(PetTable) do
+		lib.Network.Fire("Farm Coin", Coinid, v)
+	end
+end
+
+function GetPetsTable()
+	local PetsEquipped = {}
+	for i, v in pairs(lib.PetCmds.GetEquipped()) do
+		table.insert(PetsEquipped, v.uid)
+	end
+	return PetsEquipped
+end
+
+function FarmCoins(Method, Area, BlacklistedCoins)
+	local Coinid
+	local CoinName
+	local BlackListedIDs = {}
+	if Method == "Deafult" then
+		for i, v in pairs(lib.Network.Invoke("Get Coins")) do
+			if v.a == Area then
+				for I, V in pairs(BlacklistedCoins) do
+					for ii, vv in pairs(V) do
+						if v.n == vv and v.a == Area then
+							table.insert(BlackListedIDs, i)
+						end 
+					end
+				end
+			end
+			if v.a == Area then
+				local found = false
+				for _, id in pairs(BlackListedIDs) do
+					if i == id then
+						found = true
+						break	
+					end
+				end
+				if not found then
+					Coinid = i
+					CoinName = v.n
+				end	
+			end
+		end
+		if Coinid ~= nil then
+			spawn(function()
+				JoinCoin(Coinid, GetPetsTable())
+				FarmCoin(Coinid, GetPetsTable())
+			end)
+		end
+	end
+	if Method == "Highest Coin Multiplier" then
+		local highestMultiplier = 0
+		local coinmult
+		local found
+		for i, v in pairs(lib.Network.Invoke("Get Coins")) do
+			if v.a == Area then
+				for I, V in pairs(BlacklistedCoins) do
+					for ii, vv in pairs(V) do
+						if v.n == vv and v.a == Area then
+							table.insert(BlackListedIDs, i)
+						end 
+					end
+				end
+			end
+			if v.a == Area then
+				found = false
+				for _, id in pairs(BlackListedIDs) do
+					if i == id then
+						found = true
 						break
 					end
 				end
-			end
-		end
-	end
-end)
-
-spawn(function()
-	while wait(getgenv().WaitBeforeChangingCoin) do
-		if getgenv().AutoFarmSuper then
-			if #GetPetsTable() ~= 0 then
-				if getgenv().SelectedAreaFarm ~= nil then
-					if lib.Network.Invoke("Get Coins") ~= nil then
-						for i, v in pairs(lib.Network.Invoke("Get Coins")) do
-							if v.a == getgenv().SelectedAreaFarm then
-								Coinid = i
-								CoinArea = v.a
-								CoinWorld = v.w
-								if Coinid ~= nil and #GetPetsTable() ~= 0 then
-									JoinCoin(Coinid, GetPetsTable())
-									for i, v in pairs(GetPetsTable()) do
-										FarmCoin(Coinid, v)
-									end
-								end
-							end
+				if not found then
+					if v.b then
+						if v.b["l"][1]["m"] > highestMultiplier then
+							highestMultiplier = v.b["l"][1]["m"]
+							Coinid = i
+							coinmult = v.b
 						end
 					end
+				end
+				if not coinmult and not found then
+					Coinid = i
+				end
+			end
+		end
+		if Coinid ~= nil then
+			spawn(function()
+				JoinCoin(Coinid, GetPetsTable())
+				FarmCoin(Coinid, GetPetsTable())
+			end)
+		end
+	end
+	if Method == "Super Farm" then
+		for i, v in pairs(lib.Network.Invoke("Get Coins")) do
+			if v.a == Area then
+				Coinid = i
+				if Coinid ~= nil then
+					JoinCoin(Coinid, GetPetsTable())
+					FarmCoin(Coinid, GetPetsTable())
 				end
 			end
 		end
 	end
-end)
+end
 
-spawn(function()
-	while wait() do
-		if getgenv().AutoFarmMulti then
+getgenv().FarmingMode = "Deafult"
+getgenv().SelectedArea = "Town"
+getgenv().BlacklistedCoins = {{}}
+
+spawn(function() -- AutoFarm
+	while wait(0.2) do
+		if getgenv().AutoFarm then
 			if #GetPetsTable() ~= 0 then
-				if getgenv().SelectedAreaFarm ~= nil then
-					if lib.Network.Invoke("Get Coins") ~= nil then
-						for i, v in pairs(lib.Network.Invoke("Get Coins")) do
-							if v.a == getgenv().SelectedAreaFarm then
-								Coinid = i
-								CoinArea = v.a
-								CoinWorld = v.w
-								for indx, val in pairs(GetPetsTable()) do
-									petid = val
-								end
-								if Coinid ~= nil then
-									JoinCoin(Coinid, {petid})
-									FarmCoin(Coinid, petid)
-									wait(getgenv().WaitBeforeChangingCoin)
-								end
-							end
-						end
-					end
-				end
+				FarmCoins(getgenv().FarmingMode, getgenv().SelectedArea, getgenv().BlacklistedCoins)
 			end
 		end
-	end
+	end 
 end)
+
+spawn(function() -- AutoSuperFarm
+	while wait(2) do
+		if getgenv().AutoSuperFarm then
+			if #GetPetsTable() ~= 0 then
+				FarmCoins("Super Farm", getgenv().SelectedArea, getgenv().BlacklistedCoins)
+			end
+		end
+	end 
+end)
+
+--//[<Farming Stuff>]
 
 
 -- // Pet Enchanting
@@ -487,19 +512,21 @@ local ReloadServer = Tab:Button({name = "Reload Server", callback = function()
 	ReloadServer()
 end})
 
-local SectionFarm = TabFarm:Section({name = "Farming (semi broken)"})
-local NoralFarmToggle = SectionFarm:Toggle({name = "Auto Farm", callback = function(v) getgenv().AutoFarmNormal = (v) end})
-local twondFarmToggle = SectionFarm:Toggle({name = "Super Farm", callback = function(v) getgenv().AutoFarmSuper = (v) end})
-local twondFarmToggle = SectionFarm:Toggle({name = "Multi Super Farm", callback = function(v) getgenv().AutoFarmMulti = (v) end})
-local NoralFarmSlider = SectionFarm:Slider({name = "(Super Farm) Wait Before Changing Coin", min = 0, max = 4, deafult = 2, callback = function(v) getgenv().WaitBeforeChangingCoin = (v) end})
-local FarmDropdownAreas = SectionFarm:Dropdown({name = "Select Area", callback = function(v) getgenv().SelectedAreaFarm = (v) end})
-local areas = {}
-for i, v in pairs(lib.Directory.Areas) do
-	areas[#areas+1] = {name = i, id = v.id}
-end
+local FarmingSection = TabFarm:Section({name = "Farming"})
 
-for i, area in ipairs(areas) do
-	FarmDropdownAreas:Add(area.name)
+local AutoFarm = FarmingSection:Toggle({name = "Auto Farm", callback = function(v) getgenv().AutoFarm = (v) end})
+local AutoSuperFarm = FarmingSection:Toggle({name = "Auto Super Farm", callback = function(v) getgenv().AutoSuperFarm = (v) end})
+local AutoFarmMode = FarmingSection:Dropdown({name = "Farming Mode", callback = function(v) getgenv().FarmingMode = (v) end})
+AutoFarmMode:Add("Deafult", 1)
+AutoFarmMode:Add("Highest Coin Multiplier", 2)
+local AutoFarmArea = FarmingSection:Dropdown({name = "Select Area", callback = function(v) getgenv().SelectedArea = (v) end})
+
+local sortedAreas = {}
+for i, v in pairs(lib.Directory.Areas) do
+	sortedAreas[v.id] = i
+end
+for i, v in ipairs(sortedAreas) do
+	AutoFarmArea:Add(v, i)
 end
 
 
@@ -508,6 +535,21 @@ local SectionCollect = TabFarm:Section({name = "Auto Collect"})
 local AutoOrbs = SectionCollect:Toggle({name = "Auto Orbs", callback = function(v) getgenv().AutoOrbs = (v) end})
 local AutoLootbags = SectionCollect:Toggle({name = "Auto Lootbags", callback = function(v) getgenv().AutoLootbags = (v) end})
 local AutoGifts = SectionCollect:Toggle({name = "Auto Redeem Gifts", callback = function(v) getgenv().AutoGifts = (v) end})
+
+local BlacklistSection = TabFarm:Section({name = "Blacklist Coins"})
+
+
+for i, v in pairs(lib.Save.Get()) do
+	if typeof(v) == "number" and string.find(i, "Coins") or string.find(i, "Hearts") then
+		local Currency = i
+		local Dropdowns = BlacklistSection:MultiDropdown({name = i, callback = function(v) getgenv().BlacklistedCoins[i] = v end})
+		for I, V in pairs(lib.Directory.Coins) do
+			if V.currencyType == Currency then
+				Dropdowns:Add(I)
+			end
+		end
+	end
+end
 
 function DisableEggAnim(boolean)
 	if boolean then 
