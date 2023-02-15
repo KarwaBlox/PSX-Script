@@ -622,11 +622,15 @@ spawn(function()
 	end
 end)
 
+local sortedEggs = {}
 for i, v in pairs(lib.Directory.Eggs) do
 	if v.hatchable then
-		local HatchableEggs = v.displayName
-		EggDrop:Add(HatchableEggs)
+		table.insert(sortedEggs, {index = i, egg = v})
 	end
+end
+table.sort(sortedEggs, function(a, b) return a.index < b.index end)
+for i, v in ipairs(sortedEggs) do
+	EggDrop:Add(v.index)
 end
 
 local EnchantSection = TabMachines:Section({name = "Enchant Pets"})
@@ -648,12 +652,31 @@ local GamepassesSection = TabMisc:Section({name = "Gamepasses"})
 local UnlockGamepasses = GamepassesSection:Button({name = "Unlock Gamepasses", callback = function(v) GetGamepasses() end})
 local InfoGamepasses = GamepassesSection:Label({name = "Most of the gamepasses are just visual such as triple hatch pets equipped and more", icon = false})
 
+function ChangeHoverSpeed(Hoverboard, speed)
+	local Hover
+	if Hoverboard ~= nil and speed ~= nil then
+		Hover = lib.Directory.Hoverboards[Hoverboard]
+		Hover.speed = tonumber(speed)
+	end
+end
+
+function ChangeHoverDesc(Hoverboard, desc)
+	local Hover
+	if Hoverboard ~= nil and desc ~= nil then
+		Hover = lib.Directory.Hoverboards[Hoverboard]
+		Hover.neededDesc = tostring(desc)
+	end
+end
+
+
 local HoverboardsSection = TabMisc:Section({name = "Hoverboards"})
 local UnlockHover = HoverboardsSection:Button({name = "Unlock Hoverboards", callback = function(v) GetHoverboards() end})
 local DropdownHover = HoverboardsSection:Dropdown({name = "Equip Hoverboard", callback = function(v) EquipHoverboard(v) end})
 for i, v in pairs(lib.Directory.Hoverboards) do
 	DropdownHover:Add(i)
 end
+local ChangeHoverSped = HoverboardsSection:Slider({name = "Hoverboard Speed", min = 1, max = 3, deafult = 2, callback = function(v) ChangeHoverSpeed(lib.Save.Get().EquippedHoverboard, v) end})
+local ChangeHoverDesc = HoverboardsSection:TextBox({name = "Change Hoverboard Desc", callback = function(v) ChangeHoverDesc(lib.Save.Get().EquippedHoverboard, v) end})
 
 local BoostsSection = TabMisc:Section({name = "Boosts"})
 local ActivateTripleCoins = BoostsSection:Toggle({name = "Auto Activate Triple Coins", callback = function(v) getgenv().AutoTripleCoins = (v) end})
