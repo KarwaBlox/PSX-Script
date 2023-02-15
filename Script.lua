@@ -110,6 +110,7 @@ end
 
 function EquipHoverboard(hoverboard)
 	lib.Save.Get().EquippedHoverboard = hoverboard
+	hoverbrd:Update()
 end
 
 function ReloadServer()
