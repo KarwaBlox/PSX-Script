@@ -400,7 +400,7 @@ getgenv().SelectedArea = "Town"
 getgenv().BlacklistedCoins = {{}}
 
 spawn(function() -- AutoFarm
-	while wait(0.2) do
+	while wait(0.35) do
 		if getgenv().AutoFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins(getgenv().FarmingMode, getgenv().SelectedArea, getgenv().BlacklistedCoins)
