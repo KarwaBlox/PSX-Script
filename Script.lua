@@ -286,12 +286,16 @@ end
 --//[<Farming Stuff>]
 
 function JoinCoin(Coinid, PetTable)
-	lib.Network.Invoke("Join Coin", Coinid, PetTable)
+	if Coinid ~= nil and PetTable ~= nil then
+		lib.Network.Invoke("Join Coin", Coinid, PetTable)
+	end
 end
 
 function FarmCoin(Coinid, PetTable)
-	for i, v in pairs(PetTable) do
-		lib.Network.Fire("Farm Coin", Coinid, v)
+	if Coinid ~= nil and PetTable ~= nil then
+		for i, v in pairs(PetTable) do
+			lib.Network.Fire("Farm Coin", Coinid, v)
+		end
 	end
 end
 
@@ -393,6 +397,45 @@ function FarmCoins(Method, Area, BlacklistedCoins)
 			end
 		end
 	end
+	if Method == "Valentines First" then
+		local found
+		local foundhearts
+		for i, v in pairs(lib.Network.Invoke("Get Coins")) do
+			if v.a == Area then
+				for I, V in pairs(BlacklistedCoins) do
+					for ii, vv in pairs(V) do
+						if v.n == vv and v.a == Area then
+							table.insert(BlackListedIDs, i)
+						end 
+					end
+				end
+			end
+			if v.a == Area then
+				found = false
+				for _, id in pairs(BlackListedIDs) do
+					if i == id then
+						found = true
+						break
+					end
+				end
+				if not found then
+					if v.n == "Heart Present" or "Heart Pile" or "Giant Valentines Chest" then
+						Coinid = i
+						foundhearts = true
+					end
+				end
+				if not foundhearts and not found then
+					Coinid = i
+				end
+			end
+		end
+		if Coinid ~= nil then
+			spawn(function()
+				JoinCoin(Coinid, GetPetsTable())
+				FarmCoin(Coinid, GetPetsTable())
+			end)
+		end
+	end
 end
 
 getgenv().FarmingMode = "Deafult"
@@ -400,7 +443,7 @@ getgenv().SelectedArea = "Town"
 getgenv().BlacklistedCoins = {{}}
 
 spawn(function() -- AutoFarm
-	while wait(0.35) do
+	while wait(0.4) do
 		if getgenv().AutoFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins(getgenv().FarmingMode, getgenv().SelectedArea, getgenv().BlacklistedCoins)
@@ -490,13 +533,43 @@ spawn(function()
 		end
 	end
 end)
--- //
+
 
 
 
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
 local main = Library:New({name = "Nigga Script | Pet Simulator X |"})
+
+local Filename = "PSXsettings.json"
+local json
+function CreateSettings()
+	local HttpService = game:GetService("HttpService")
+	if (isfolder) and (makefolder) then
+		makefolder("NiggaScript")
+	end
+	if (writefile) then
+		json = HttpService:JSONEncode(main.Config)
+		writefile(Filename, json)   
+	end
+end
+
+
+function ReadSettings(index)
+	local HttpService = game:GetService("HttpService")
+	local value
+	if (readfile and isfile) and isfile(Filename) then
+		local settingsTable = json
+		settingsTable = HttpService:JSONDecode(readfile(Filename))
+		for i, v in pairs(settingsTable) do
+			if i == index then
+				value = v
+			end
+		end
+		return value
+	end
+end
+
 
 local Tab = main:CreateTab({
 	name = "Home"
@@ -513,30 +586,36 @@ local ReloadServer = Tab:Button({name = "Reload Server", callback = function()
 	ReloadServer()
 end})
 local DestroyBtn = Tab:Button({name = "Destroy UI", callback = function() main:DestroyUI() end})
+local SaveBtn = Tab:Button({
+	name = "Save Settings", 
+	callback = function() 
+		main:SaveConfig()
+		CreateSettings()
+end})
 
 local FarmingSection = TabFarm:Section({name = "Farming"})
 
-local AutoFarm = FarmingSection:Toggle({name = "Auto Farm", callback = function(v) getgenv().AutoFarm = (v) end})
-local AutoSuperFarm = FarmingSection:Toggle({name = "Super Farm", callback = function(v) getgenv().AutoSuperFarm = (v) end})
-local AutoFarmMode = FarmingSection:Dropdown({name = "Farming Mode", callback = function(v) getgenv().FarmingMode = (v) end})
-AutoFarmMode:Add("Deafult", 1)
-AutoFarmMode:Add("Highest Coin Multiplier", 2)
-local AutoFarmArea = FarmingSection:Dropdown({name = "Select Area", callback = function(v) getgenv().SelectedArea = (v) end})
+local AutoFarm = FarmingSection:Toggle({name = "Auto Farm",deafult = ReadSettings("Auto Farm") , callback = function(v) getgenv().AutoFarm = (v) end})
+local AutoSuperFarm = FarmingSection:Toggle({name = "Super Farm", deafult = ReadSettings("Super Farm"), callback = function(v) getgenv().AutoSuperFarm = (v) end})
+local AutoFarmMode = FarmingSection:Dropdown({name = "Farming Mode", deafult = ReadSettings("Farming Mode"), callback = function(v) getgenv().FarmingMode = (v) end})
+AutoFarmMode:Add("Deafult")
+AutoFarmMode:Add("Highest Coin Multiplier")
+local AutoFarmArea = FarmingSection:Dropdown({name = "Select Area", deafult = ReadSettings("Select Area"), callback = function(v) getgenv().SelectedArea = (v) end})
 
 local sortedAreas = {}
 for i, v in pairs(lib.Directory.Areas) do
 	sortedAreas[v.id] = i
 end
 for i, v in ipairs(sortedAreas) do
-	AutoFarmArea:Add(v, i)
+	AutoFarmArea:Add(v)
 end
 
 
 local SectionCollect = TabFarm:Section({name = "Auto Collect"})
 
-local AutoOrbs = SectionCollect:Toggle({name = "Auto Orbs", callback = function(v) getgenv().AutoOrbs = (v) end})
-local AutoLootbags = SectionCollect:Toggle({name = "Auto Lootbags", callback = function(v) getgenv().AutoLootbags = (v) end})
-local AutoGifts = SectionCollect:Toggle({name = "Auto Redeem Gifts", callback = function(v) getgenv().AutoGifts = (v) end})
+local AutoOrbs = SectionCollect:Toggle({name = "Auto Orbs", deafult = ReadSettings("Auto Orbs"), callback = function(v) getgenv().AutoOrbs = (v) end})
+local AutoLootbags = SectionCollect:Toggle({name = "Auto Lootbags", deafult = ReadSettings("Auto Lootbags"), callback = function(v) getgenv().AutoLootbags = (v) end})
+local AutoGifts = SectionCollect:Toggle({name = "Auto Redeem Gifts", deafult = ReadSettings("Auto Redeem Gifts"), callback = function(v) getgenv().AutoGifts = (v) end})
 
 local BlacklistSection = TabFarm:Section({name = "Blacklist Coins"})
 
@@ -544,12 +623,13 @@ local BlacklistSection = TabFarm:Section({name = "Blacklist Coins"})
 for i, v in pairs(lib.Save.Get()) do
 	if typeof(v) == "number" and string.find(i, "Coins") or string.find(i, "Hearts") then
 		local Currency = i
-		local Dropdowns = BlacklistSection:MultiDropdown({name = i, callback = function(v) getgenv().BlacklistedCoins[i] = v end})
+		local Dropdowns = BlacklistSection:MultiDropdown({name = i, deafult = ReadSettings(i), callback = function(v) getgenv().BlacklistedCoins[i] = v end})
 		for I, V in pairs(lib.Directory.Coins) do
 			if V.currencyType == Currency then
 				Dropdowns:Add(I)
 			end
 		end
+		Dropdowns:Add("Diamonds")
 	end
 end
 
@@ -564,9 +644,9 @@ end
 
 
 local EggSection = TabEgg:Section({name = "Auto Eggs"})
-local AutoEgg = EggSection:Toggle({name = "Auto Open Egg", callback = function(v) getgenv().AutoEgg = (v) end})
-local DisableEggAnim = EggSection:Toggle({name = "Disable Egg Animation", callback = function(v) DisableEggAnim(v) end})
-local DropHatchMode = EggSection:Dropdown({name = "Hatch Mode", callback = function(v) getgenv().HatchMode = (v) end})
+local AutoEgg = EggSection:Toggle({name = "Auto Open Egg", deafult = ReadSettings("Auto Open Egg"), callback = function(v) getgenv().AutoEgg = (v) end})
+local DisableEggAnim = EggSection:Toggle({name = "Disable Egg Animation", deafult = ReadSettings("Disable Egg Animation"), callback = function(v) DisableEggAnim(v) end})
+local DropHatchMode = EggSection:Dropdown({name = "Hatch Mode", deafult = ReadSettings("Hatch Mode"), callback = function(v) getgenv().HatchMode = (v) end})
 DropHatchMode:Add("Deafult")
 DropHatchMode:Add("Triple")
 DropHatchMode:Add("Octuple")
@@ -577,7 +657,12 @@ local EggOpened = EggInfoSection:Label({name = "Eggs Opened: (not selected)", ic
 local EggAvaiable = EggInfoSection:Label({name = "Eggs Available: (not selected)", icon = false, centerText = true})
 
 function CalculateAvaiableEggs(Egg)
-	local EggCost = lib.Directory.Eggs[Egg].cost
+	local EggCost	
+	if game.PlaceId == 10321372166 then
+		EggCost = lib.Directory.Eggs[Egg].hardcoreCost
+	else
+		EggCost = lib.Directory.Eggs[Egg].cost
+	end
 	local EggCurrency = lib.Directory.Eggs[Egg].currency
 	if game.PlaceId == 10321372166 then
 		local Avaiable = math.ceil(lib.Save.Get().HardcoreCurrency[EggCurrency] / EggCost)
@@ -590,6 +675,7 @@ end
 
 local EggDrop = EggSection:Dropdown({
 	name = "Select Egg",
+	deafult = ReadSettings("Select Egg"),
 	callback = function(v) 
 		getgenv().Egg = (v) 
 		EggTracker:SetText("Egg Info: "..v)
@@ -635,9 +721,9 @@ for i, v in ipairs(sortedEggs) do
 end
 
 local EnchantSection = TabMachines:Section({name = "Enchant Pets"})
-local EnchantToggle = EnchantSection:Toggle({name = "Auto Enchant", callback = function(v) getgenv().AutoEnchant = (v) end})
-local EnchantPetName = EnchantSection:TextBox({name = "Name To Enchant", callback = function(v) getgenv().NameToEnchant = (v) end})
-local EnchantDropdown = EnchantSection:MultiDropdown({name = "Select Enchants", callback = function(v) SelectedEnchants = (v) end})
+local EnchantToggle = EnchantSection:Toggle({name = "Auto Enchant", deafult = ReadSettings("Auto Enchant"), callback = function(v) getgenv().AutoEnchant = (v) end})
+local EnchantPetName = EnchantSection:TextBox({name = "Name To Enchant", deafult = ReadSettings("Name To Enchant"), callback = function(v) getgenv().NameToEnchant = (v) end})
+local EnchantDropdown = EnchantSection:MultiDropdown({name = "Select Enchants", deafult = ReadSettings("Select Enchants"), callback = function(v) SelectedEnchants = (v) end})
 for i, v in pairs(lib.Directory.Powers) do
 	if v.canDrop then
 		for indx,val in pairs(v.tiers) do
@@ -672,36 +758,28 @@ end
 
 local HoverboardsSection = TabMisc:Section({name = "Hoverboards"})
 local UnlockHover = HoverboardsSection:Button({name = "Unlock Hoverboards", callback = function(v) GetHoverboards() end})
-local DropdownHover = HoverboardsSection:Dropdown({name = "Equip Hoverboard", callback = function(v) EquipHoverboard(v) end})
+local DropdownHover = HoverboardsSection:Dropdown({name = "Equip Hoverboard", deafult = ReadSettings("Equip Hoverboard"), callback = function(v) EquipHoverboard(v) end})
 for i, v in pairs(lib.Directory.Hoverboards) do
 	DropdownHover:Add(i)
 end
-local ChangeHoverSped = HoverboardsSection:Slider({name = "Hoverboard Speed", min = 1, max = 3, deafult = 2, callback = function(v) ChangeHoverSpeed(lib.Save.Get().EquippedHoverboard, v) end})
+local ChangeHoverSped = HoverboardsSection:Slider({name = "Hoverboard Speed", deafult2 = ReadSettings("Hoverboard Speed"), min = 1, max = 3, deafult = 2, callback = function(v) ChangeHoverSpeed(lib.Save.Get().EquippedHoverboard, v) end})
 local ChangeHoverDesc = HoverboardsSection:TextBox({name = "Change Hoverboard Desc", callback = function(v) ChangeHoverDesc(lib.Save.Get().EquippedHoverboard, v) end})
 
 local BoostsSection = TabMisc:Section({name = "Boosts"})
-local ActivateTripleCoins = BoostsSection:Toggle({name = "Auto Activate Triple Coins", callback = function(v) getgenv().AutoTripleCoins = (v) end})
-local ActivateTripleDamage = BoostsSection:Toggle({name = "Auto Activate Triple Damage", callback = function(v) getgenv().AutoTripleDamage = (v) end})
-local ActivateSuperLucky = BoostsSection:Toggle({name = "Auto Activate Super Lucky", callback = function(v) getgenv().AutoSuperLucky = (v) end})
-local ActivateUltraLucky = BoostsSection:Toggle({name = "Auto Activate Ultra Lucky", callback = function(v) getgenv().AutoUltraLucky = (v) end})
+local ActivateTripleCoins = BoostsSection:Toggle({name = "Auto Activate Triple Coins", deafult = ReadSettings("Auto Activate Triple Coins"), callback = function(v) getgenv().AutoTripleCoins = (v) end})
+local ActivateTripleDamage = BoostsSection:Toggle({name = "Auto Activate Triple Damage", deafult = ReadSettings("Auto Activate Triple Damage"), callback = function(v) getgenv().AutoTripleDamage = (v) end})
+local ActivateSuperLucky = BoostsSection:Toggle({name = "Auto Activate Super Lucky", deafult = ReadSettings("Auto Activate Super Lucky"), callback = function(v) getgenv().AutoSuperLucky = (v) end})
+local ActivateUltraLucky = BoostsSection:Toggle({name = "Auto Activate Ultra Lucky", deafult = ReadSettings("Auto Activate Ultra Lucky"), callback = function(v) getgenv().AutoUltraLucky = (v) end})
 
 
 local ServerBoostsSection = TabMisc:Section({name = "Server Boosts"})
-local ActivateServerTripleCoins = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Coins", callback = function(v) getgenv().AutoServerTripleCoins = (v) end})
-local ActivateServerTripleDamage = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Damage", callback = function(v) getgenv().AutoServerTripleDamage = (v) end})
-local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activate Server Super Lucky", callback = function(v) getgenv().AutoServerSuperLucky = (v) end})
+local ActivateServerTripleCoins = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Coins",deafult = ReadSettings("Auto Activate Server Triple Coins"), callback = function(v) getgenv().AutoServerTripleCoins = (v) end})
+local ActivateServerTripleDamage = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Damage",deafult = ReadSettings("Auto Activate Server Triple Damage"), callback = function(v) getgenv().AutoServerTripleDamage = (v) end})
+local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activate Server Super Lucky",deafult = ReadSettings("Auto Activate Server Super Lucky"), callback = function(v) getgenv().AutoServerSuperLucky = (v) end})
 
-local Valentinestab = main:CreateTab({name = "Valentine's", icon = "rbxassetid://12454744817"})
-local ScavengerHunt = Valentinestab:Section({name = "Scavenger Hunt"}) 
+local Valentinestab = main:CreateTab({name = "Valentines", icon = "rbxassetid://12454744817"})
+--local ScavengerHunt = Valentinestab:Section({name = "Scavenger Hunt"}) 
 
-function TeleportScavenger()
-	local Player = game.Players.LocalPlayer.Character
-	for i, v in pairs(game:GetService("Workspace")["__MAP"].Scavenger:GetChildren()) do
-		if v and v.CFrame then
-			Player.HumanoidRootPart.CFrame = v.CFrame
-			break
-		end 
-	end	
-end
+
 --local TPClaimHunt = ScavengerHunt:Button({name = "Teleport To Scavenger Egg", callback = function() TeleportScavenger()  end})
-local ClaimHunt = ScavengerHunt:Button({name = "Claim Scavenger Hunt Egg", callback = function() lib.Network.Invoke("Claim Scavenger Item") end})
+--local ClaimHunt = ScavengerHunt:Button({name = "Claim Scavenger Hunt Egg", callback = function() lib.Network.Invoke("Claim Scavenger Item", "Scavenger Egg") end})
