@@ -253,7 +253,7 @@ getgenv().Octuple = false
 --OpenEgg("Tropical Doodle Egg", getgenv().Triple, getgenv().Octuple)
 
 spawn(function() --EggLoop
-	while wait(0.2) do
+	while wait(2.2) do
 		if getgenv().HatchMode == "Triple" then
 			getgenv().Triple = true
 			getgenv().Octuple = false
@@ -271,10 +271,18 @@ spawn(function() --EggLoop
 end)
 
 
-function Enchant(petid)
-	lib.Network.Invoke("Enchant Pet", petid, false)
+function Enchant(PetTable)
+	if typeof(PetTable) == "table" then
+		if #PetTable > 3 then
+			PetTable = {
+				[1] = PetTable[1],
+				[2] = PetTable[2],
+				[3] = PetTable[3]
+			}
+		end
+	end
+	lib.Network.Invoke("Enchant Pets", PetTable, false)
 end
-
 
 function Teleport(EggName)
 	for i,v in pairs(game:GetService("Workspace")["__MAP"].Eggs:GetDescendants()) do
@@ -469,6 +477,7 @@ end)
 spawn(function()
 	while wait(2.12) do
 		if getgenv().AutoEnchant then
+
 			local EnchName
 			local EnchTier
 			local EnchTable = {}
@@ -514,7 +523,7 @@ spawn(function()
 				end
 			end
 
-
+			local UIdsToEnchant = {}
 			for i, v in pairs(lib.Save.Get().Pets) do
 				if v.nk == getgenv().NameToEnchant then
 					local found = false
@@ -526,10 +535,11 @@ spawn(function()
 					end
 					if not found then
 						local PetEnchantid = v.uid
-						Enchant(PetEnchantid)
+						table.insert(UIdsToEnchant, PetEnchantid)
 					end
 				end
 			end
+			Enchant(UIdsToEnchant)
 		end
 	end
 end)
