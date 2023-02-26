@@ -54,6 +54,11 @@ function BypassAntiCheat()
 
 		return OldGet(Packet)
 	end
+	for i, v in pairs(getconstants(lib.WorldCmds.Load)) do
+		if v == "Sound" then
+			setconstant(lib.WorldCmds.Load, i, "DAWFAWFAWFAWFAWFAWFAWFAWFAWFAWF")
+		end
+	end
 end
 
 BypassAntiCheat()
@@ -666,9 +671,10 @@ local EggTracker = EggInfoSection:Label({name = "Egg Info: (not selected)", icon
 local EggOpened = EggInfoSection:Label({name = "Eggs Opened: (not selected)", icon = false, centerText = true})
 local EggAvaiable = EggInfoSection:Label({name = "Eggs Available: (not selected)", icon = false, centerText = true})
 
+
 function CalculateAvaiableEggs(Egg)
 	local EggCost	
-	if game.PlaceId == 10321372166 then
+	if game.PlaceId == 10321372166 and lib.Directory.Eggs[Egg].hardcoreCost then
 		EggCost = lib.Directory.Eggs[Egg].hardcoreCost
 	else
 		EggCost = lib.Directory.Eggs[Egg].cost
@@ -682,6 +688,7 @@ function CalculateAvaiableEggs(Egg)
 		return Avaiable
 	end
 end
+
 
 local EggDrop = EggSection:Dropdown({
 	name = "Select Egg",
@@ -786,10 +793,3 @@ local ServerBoostsSection = TabMisc:Section({name = "Server Boosts"})
 local ActivateServerTripleCoins = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Coins",deafult = ReadSettings("Auto Activate Server Triple Coins"), callback = function(v) getgenv().AutoServerTripleCoins = (v) end})
 local ActivateServerTripleDamage = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Damage",deafult = ReadSettings("Auto Activate Server Triple Damage"), callback = function(v) getgenv().AutoServerTripleDamage = (v) end})
 local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activate Server Super Lucky",deafult = ReadSettings("Auto Activate Server Super Lucky"), callback = function(v) getgenv().AutoServerSuperLucky = (v) end})
-
-local Valentinestab = main:CreateTab({name = "Valentines", icon = "rbxassetid://12454744817"})
---local ScavengerHunt = Valentinestab:Section({name = "Scavenger Hunt"}) 
-
-
---local TPClaimHunt = ScavengerHunt:Button({name = "Teleport To Scavenger Egg", callback = function() TeleportScavenger()  end})
---local ClaimHunt = ScavengerHunt:Button({name = "Claim Scavenger Hunt Egg", callback = function() lib.Network.Invoke("Claim Scavenger Item", "Scavenger Egg") end})
