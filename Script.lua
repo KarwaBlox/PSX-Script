@@ -456,7 +456,7 @@ getgenv().SelectedArea = "Town"
 getgenv().BlacklistedCoins = {{}}
 
 spawn(function() -- AutoFarm
-	while task.wait(0.4) do
+	while task.wait(0.1) do
 		if getgenv().AutoFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins(getgenv().FarmingMode, getgenv().SelectedArea, getgenv().BlacklistedCoins)
@@ -796,6 +796,7 @@ local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activa
 
 local RainbowEventSec = TabMisc:Section({name = "Rainbow Event"})
 local quests = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game["Saint Patricks Quests"])
+task.wait(1)
 local timetostart = RainbowEventSec:Label({icon = false, centerText = true, name = "Event Will Start in "..lib.Functions.FormatTime(quests.GetNextGiantRainbowTime())})
 while task.wait(1) do
 	timetostart:SetText("Event Will Start in "..lib.Functions.FormatTime(quests.GetNextGiantRainbowTime()))
