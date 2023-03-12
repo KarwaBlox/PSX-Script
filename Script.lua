@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/KarwaBlox/UI-Library-Poland-Hub/main/Library.lua')))()
-local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
+local lib = require(game.ReplicatedStorage:WaitForChild("Framework"):WaitForChild("Library"))
 local hoverbrd = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.GUIs.Hoverboards)
 
 
@@ -221,7 +221,7 @@ spawn(function()
 end)
 
 spawn(function() --LootbagLoop
-	while wait(0.5) do
+	while task.wait(0.5) do
 		if getgenv().AutoLootbags then
 			CollectLtbg()
 		end
@@ -229,7 +229,7 @@ spawn(function() --LootbagLoop
 end)
 
 spawn(function() --OrbLoop
-	while wait() do
+	while task.wait() do
 		if getgenv().AutoOrbs then
 			CollectOrbs()
 		end
@@ -237,7 +237,7 @@ spawn(function() --OrbLoop
 end)
 
 spawn(function()
-	while wait(1) do
+	while task.wait(1) do
 		if getgenv().AutoGifts then
 			RedeemGifts()
 		end
@@ -258,7 +258,7 @@ getgenv().Octuple = false
 --OpenEgg("Tropical Doodle Egg", getgenv().Triple, getgenv().Octuple)
 
 spawn(function() --EggLoop
-	while wait(2.2) do
+	while task.wait(2.2) do
 		if getgenv().HatchMode == "Triple" then
 			getgenv().Triple = true
 			getgenv().Octuple = false
@@ -456,7 +456,7 @@ getgenv().SelectedArea = "Town"
 getgenv().BlacklistedCoins = {{}}
 
 spawn(function() -- AutoFarm
-	while wait(0.4) do
+	while task.wait(0.4) do
 		if getgenv().AutoFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins(getgenv().FarmingMode, getgenv().SelectedArea, getgenv().BlacklistedCoins)
@@ -466,7 +466,7 @@ spawn(function() -- AutoFarm
 end)
 
 spawn(function() -- AutoSuperFarm
-	while wait(1) do
+	while task.wait(1) do
 		if getgenv().AutoSuperFarm then
 			if #GetPetsTable() ~= 0 then
 				FarmCoins("Super Farm", getgenv().SelectedArea, getgenv().BlacklistedCoins)
@@ -480,7 +480,7 @@ end)
 
 -- // Pet Enchanting
 spawn(function()
-	while wait(2.12) do
+	while task.wait(2.12) do
 		if getgenv().AutoEnchant then
 
 			local EnchName
@@ -793,3 +793,10 @@ local ServerBoostsSection = TabMisc:Section({name = "Server Boosts"})
 local ActivateServerTripleCoins = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Coins",deafult = ReadSettings("Auto Activate Server Triple Coins"), callback = function(v) getgenv().AutoServerTripleCoins = (v) end})
 local ActivateServerTripleDamage = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Damage",deafult = ReadSettings("Auto Activate Server Triple Damage"), callback = function(v) getgenv().AutoServerTripleDamage = (v) end})
 local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activate Server Super Lucky",deafult = ReadSettings("Auto Activate Server Super Lucky"), callback = function(v) getgenv().AutoServerSuperLucky = (v) end})
+
+local RainbowEventSec = TabMisc:Section({name = "Rainbow Event"})
+local quests = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game["Saint Patricks Quests"])
+local timetostart = RainbowEventSec:Label({icon = false, centerText = true, name = "Event Will Start in "..lib.Functions.FormatTime(quests.GetNextGiantRainbowTime())})
+while task.wait(1) do
+	timetostart:SetText("Event Will Start in "..lib.Functions.FormatTime(quests.GetNextGiantRainbowTime()))
+end
