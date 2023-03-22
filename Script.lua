@@ -63,13 +63,6 @@ function BypassAntiCheat()
 			setconstant(lib.WorldCmds.Load, i, "DAWFAWFAWFAWFAWFAWFAWFAWFAWFAWF")
 		end
 	end
-	for i, v in pairs(getconstants(teleport.ActuallyTeleport)) do
-		if typeof(v) == "string" then
-			if string.find(v, "rbx") then
-				setconstant(teleport.ActuallyTeleport, i, "rbxassetid://123450124124124124124124124")
-			end
-		end
-	end
 end
 
 BypassAntiCheat()
