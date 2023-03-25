@@ -56,16 +56,19 @@ function BypassAntiCheat()
 		end
 		return OldGet(Packet)
 	end
-	local oldaudio = hookfunction(lib.Audio.Play, function(...)
-		local args = {...}
-		return table.unpack(args)
+	local old1 = hookfunction(lib.Audio.Play, function(sound, ...)
+		return {
+			Play = function()
+				print("Fake sound played")
+			end,
+			Stop = function()
+				print("Fake sound stopped")
+			end,
+			IsPlaying = function()
+				return false
+			end
+		}
 	end)
-	for i, v in pairs(getconstants(lib.WorldCmds.Load)) do
-		if v == "Sound" then
-			setconstant(lib.WorldCmds.Load, i, "ADAWDAWDAW")
-			print(i, v)
-		end
-	end
 end
 
 BypassAntiCheat()
