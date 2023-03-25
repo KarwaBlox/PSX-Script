@@ -602,115 +602,118 @@ function TeleportToArea(area)
 	teleport.Teleport(area, true)
 end
 
-local status = "Waiting for event..."
-spawn(function()
-	local Chests = {}
-	local GiantRainbow = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game["Giant Rainbow"])
-	local function TeleportToDiff()
-		status = "Waiting for event..."
-		if getgenv().AreaToTpEvent ~= nil then
-			lib.Variables.Teleporting = false
-			TeleportToArea(getgenv().AreaToTpEvent)
-		end
-	end
-	local old = hookfunction(GiantRainbow.TeleportSpawn, TeleportToDiff)
-	while task.wait(0.5) do 
-		if lib.Variables.Teleporting then
-			lib.Variables.Teleporting = false
-		end
-		if getgenv().AutoFarmRainbowEvent then
-			if lib.Network.Invoke("Rainbow: Get Data") then
-				if status == "Opening Egg" then
-				else	
-					status = "Event is there!"
-				end
-			end
-			if status == "Event is there!" then
-				if lib.WorldCmds.Get() ~= "Spawn" then
-					lib.WorldCmds.Load("Spawn")
-				end
-				if lib.WorldCmds.HasLoaded() and lib.WorldCmds.Get() == "Spawn" then
-					local Part1CFrame = CFrame.new(-39.4152946, 142.583786, 208.395767, 0.981376588, 7.65234809e-09, -0.19209376, -5.07656939e-09, 1, 1.39011389e-08, 0.19209376, -1.26670745e-08, 0.981376588)
-					local Part2CFrame = CFrame.new(-40.7253876, 202.311386, 27.282465, 0.824083388, 1.25371113e-09, -0.566468537, -7.70714048e-10, 1, 1.09199105e-09, 0.566468537, -4.63306365e-10, 0.824083388)
-					local Part3CFrame = CFrame.new(-40.4158707, 242.71965, -212.601883, 0.915622532, 2.34149216e-08, 0.402039021, -4.90855783e-08, 1, 5.35493783e-08, -0.402039021, -6.87653383e-08, 0.915622532)
-					local Part4CFrame = CFrame.new(-42.4272346, 230.489105, -532.918518, 0.941682994, -1.96813499e-09, 0.336501271, 4.02651867e-09, 1, -5.41920464e-09, -0.336501271, 6.45810161e-09, 0.941682994)
-					local Part5CFrame = CFrame.new(-36.9595642, 198.952789, -679.571289, 0.881043553, -2.73996328e-08, -0.473035127, 2.51929055e-08, 1, -1.10004201e-08, 0.473035127, -2.22527974e-09, 0.881043553)
-					local PotOfGoldenEggCFrame = game:GetService("Workspace")["__MAP"].Eggs["Pot of Gold Egg"].PLATFORM.SectionName.CFrame
-					if lib.Network.Invoke("Rainbow: Get Data") then
-						for i, v in pairs(lib.Network.Invoke("Rainbow: Get Data").Chests) do
-							Chests[tostring(v)] = i
-						end
-					end
-					if Chests["1"] and lib.Network.Invoke("Get Coins")[Chests["1"]] then
-						Teleportt(Part1CFrame)
-						task.wait(0.1)
-						JoinCoin(Chests["1"], GetPetsTable())
-						FarmCoin(Chests["1"], GetPetsTable())
-						if status ~= "Waiting for event..." then
-							status = "Farming First Chest"
-						end
-					elseif not lib.Network.Invoke("Get Coins")[Chests["1"]] and lib.Network.Invoke("Get Coins")[Chests["2"]] then
-						Teleportt(Part2CFrame)
-						task.wait(0.1)
-						JoinCoin(Chests["2"], GetPetsTable())
-						FarmCoin(Chests["2"], GetPetsTable())
-						if status ~= "Waiting for event..." then
-							status = "Farming 2nd Chest"
-						end
-					elseif not lib.Network.Invoke("Get Coins")[Chests["2"]] and lib.Network.Invoke("Get Coins")[Chests["3"]] then
-						Teleportt(Part3CFrame)
-						task.wait(0.1)
-						JoinCoin(Chests["3"], GetPetsTable())
-						FarmCoin(Chests["3"], GetPetsTable())
-						if status ~= "Waiting for event..." then
-							status = "Farming 3rd Chest"
-						end
-					elseif not lib.Network.Invoke("Get Coins")[Chests["3"]] and lib.Network.Invoke("Get Coins")[Chests["4"]] then
-						Teleportt(Part4CFrame)
-						task.wait(0.1)
-						JoinCoin(Chests["4"], GetPetsTable())
-						FarmCoin(Chests["4"], GetPetsTable())
-						if status ~= "Waiting for event..." then
-							status = "Farming 4th Chest"
-						end
-					elseif not lib.Network.Invoke("Get Coins")[Chests["4"]] and lib.Network.Invoke("Get Coins")[Chests["5"]] then
-						Teleportt(Part5CFrame)
-						task.wait(0.1)
-						JoinCoin(Chests["5"], GetPetsTable())
-						FarmCoin(Chests["5"], GetPetsTable())
-						if status ~= "Waiting for event..." then
-							status = "Farming 5th Chest"
-						end
-					elseif not lib.Network.Invoke("Get Coins")[Chests["5"]] then
-						if status ~= "Waiting for event..." then
-							status = "Going To Egg"
-						end
-						Teleportt(PotOfGoldenEggCFrame)
-						spawn(function()
-							while task.wait(2.2) do
-								if getgenv().HatchMode == "Triple" then
-									getgenv().Triple = true
-									getgenv().Octuple = false
-								elseif getgenv().HatchMode == "Octuple" then
-									getgenv().Triple = false
-									getgenv().Octuple = true
-								elseif getgenv().HatchMode == "Deafult" then
-									getgenv().Triple = false
-									getgenv().Octuple = false
-								end
-								OpenEgg("Pot of Gold Egg", getgenv().Triple, getgenv().Octuple)
-								if status == "Waiting for event..." then break end
-							end
-						end)
-						if status ~= "Waiting for event..." then
-							status = "Opening Egg"
-						end
-					end
-				end
-			end
-		end
-	end
-end)
+
+--local status = "Waiting for event..."
+--spawn(function()
+--	local Chests = {}
+--	local GiantRainbow = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game["Giant Rainbow"])
+--	local function TeleportToDiff()
+--		status = "Waiting for event..."
+--		if getgenv().AreaToTpEvent ~= nil then
+--			lib.Variables.Teleporting = false
+--			TeleportToArea(getgenv().AreaToTpEvent)
+--		end
+--	end
+--	local old = hookfunction(GiantRainbow.TeleportSpawn, TeleportToDiff)
+--	while task.wait(0.5) do 
+--		if lib.Variables.Teleporting then
+--			lib.Variables.Teleporting = false
+--		end
+--		if getgenv().AutoFarmRainbowEvent then
+--			if lib.Network.Invoke("Rainbow: Get Data") then
+--				if status == "Opening Egg" then
+--				else	
+--					status = "Event is there!"
+--				end
+--			end
+--			if status == "Event is there!" then
+--				if lib.WorldCmds.Get() ~= "Spawn" then
+--					lib.WorldCmds.Load("Spawn")
+--				end
+--				if lib.WorldCmds.HasLoaded() and lib.WorldCmds.Get() == "Spawn" then
+--					local Part1CFrame = CFrame.new(-39.4152946, 142.583786, 208.395767, 0.981376588, 7.65234809e-09, -0.19209376, -5.07656939e-09, 1, 1.39011389e-08, 0.19209376, -1.26670745e-08, 0.981376588)
+--					local Part2CFrame = CFrame.new(-40.7253876, 202.311386, 27.282465, 0.824083388, 1.25371113e-09, -0.566468537, -7.70714048e-10, 1, 1.09199105e-09, 0.566468537, -4.63306365e-10, 0.824083388)
+--					local Part3CFrame = CFrame.new(-40.4158707, 242.71965, -212.601883, 0.915622532, 2.34149216e-08, 0.402039021, -4.90855783e-08, 1, 5.35493783e-08, -0.402039021, -6.87653383e-08, 0.915622532)
+--					local Part4CFrame = CFrame.new(-42.4272346, 230.489105, -532.918518, 0.941682994, -1.96813499e-09, 0.336501271, 4.02651867e-09, 1, -5.41920464e-09, -0.336501271, 6.45810161e-09, 0.941682994)
+--					local Part5CFrame = CFrame.new(-36.9595642, 198.952789, -679.571289, 0.881043553, -2.73996328e-08, -0.473035127, 2.51929055e-08, 1, -1.10004201e-08, 0.473035127, -2.22527974e-09, 0.881043553)
+--					local PotOfGoldenEggCFrame = game:GetService("Workspace")["__MAP"].Eggs["Pot of Gold Egg"].PLATFORM.SectionName.CFrame
+--					if lib.Network.Invoke("Rainbow: Get Data") then
+--						for i, v in pairs(lib.Network.Invoke("Rainbow: Get Data").Chests) do
+--							Chests[tostring(v)] = i
+--						end
+--					end
+--					if Chests["1"] and lib.Network.Invoke("Get Coins")[Chests["1"]] then
+--						Teleportt(Part1CFrame)
+--						task.wait(0.1)
+--						JoinCoin(Chests["1"], GetPetsTable())
+--						FarmCoin(Chests["1"], GetPetsTable())
+--						if status ~= "Waiting for event..." then
+--							status = "Farming First Chest"
+--						end
+--					elseif not lib.Network.Invoke("Get Coins")[Chests["1"]] and lib.Network.Invoke("Get Coins")[Chests["2"]] then
+--						Teleportt(Part2CFrame)
+--						task.wait(0.1)
+--						JoinCoin(Chests["2"], GetPetsTable())
+--						FarmCoin(Chests["2"], GetPetsTable())
+--						if status ~= "Waiting for event..." then
+--							status = "Farming 2nd Chest"
+--						end
+--					elseif not lib.Network.Invoke("Get Coins")[Chests["2"]] and lib.Network.Invoke("Get Coins")[Chests["3"]] then
+--						Teleportt(Part3CFrame)
+--						task.wait(0.1)
+--						JoinCoin(Chests["3"], GetPetsTable())
+--						FarmCoin(Chests["3"], GetPetsTable())
+--						if status ~= "Waiting for event..." then
+--							status = "Farming 3rd Chest"
+--						end
+--					elseif not lib.Network.Invoke("Get Coins")[Chests["3"]] and lib.Network.Invoke("Get Coins")[Chests["4"]] then
+--						Teleportt(Part4CFrame)
+--						task.wait(0.1)
+--						JoinCoin(Chests["4"], GetPetsTable())
+--						FarmCoin(Chests["4"], GetPetsTable())
+--						if status ~= "Waiting for event..." then
+--							status = "Farming 4th Chest"
+--						end
+--					elseif not lib.Network.Invoke("Get Coins")[Chests["4"]] and lib.Network.Invoke("Get Coins")[Chests["5"]] then
+--						Teleportt(Part5CFrame)
+--						task.wait(0.1)
+--						JoinCoin(Chests["5"], GetPetsTable())
+--						FarmCoin(Chests["5"], GetPetsTable())
+--						if status ~= "Waiting for event..." then
+--							status = "Farming 5th Chest"
+--						end
+--					elseif not lib.Network.Invoke("Get Coins")[Chests["5"]] then
+--						if status ~= "Waiting for event..." then
+--							status = "Going To Egg"
+--						end
+--						Teleportt(PotOfGoldenEggCFrame)
+--						spawn(function()
+--							while task.wait(2.2) do
+--								if getgenv().HatchMode == "Triple" then
+--									getgenv().Triple = true
+--									getgenv().Octuple = false
+--								elseif getgenv().HatchMode == "Octuple" then
+--									getgenv().Triple = false
+--									getgenv().Octuple = true
+--								elseif getgenv().HatchMode == "Deafult" then
+--									getgenv().Triple = false
+--									getgenv().Octuple = false
+--								end
+--								OpenEgg("Pot of Gold Egg", getgenv().Triple, getgenv().Octuple)
+--								if status == "Waiting for event..." then break end
+--							end
+--						end)
+--						if status ~= "Waiting for event..." then
+--							status = "Opening Egg"
+--						end
+--					end
+--				end
+--			end
+--		end
+--	end
+--end)
+
+
 
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
@@ -954,6 +957,7 @@ local ActivateServerTripleCoins = ServerBoostsSection:Toggle({name = "Auto Activ
 local ActivateServerTripleDamage = ServerBoostsSection:Toggle({name = "Auto Activate Server Triple Damage",deafult = ReadSettings("Auto Activate Server Triple Damage"), callback = function(v) getgenv().AutoServerTripleDamage = (v) end})
 local ActivateServerSuperLucky = ServerBoostsSection:Toggle({name = "Auto Activate Server Super Lucky",deafult = ReadSettings("Auto Activate Server Super Lucky"), callback = function(v) getgenv().AutoServerSuperLucky = (v) end})
 
+--[[
 local RainbowEventSec = TabFarm:Section({name = "Rainbow Event"})
 local quests = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game["Saint Patricks Quests"])
 local Status = RainbowEventSec:Label({icon = false, centerText = true,name = "Status: Disabled"})
@@ -992,6 +996,7 @@ local infoEvent = RainbowEventSec:Button({
 		lib.Signal.Fire("Notification", "Auto event will automatically teleport to event and farm chests and after those chests are farmed it teleports you to the egg and opens it when event ends it teleports you to selected area", {color = Color3.fromRGB(255, 255, 46), force = true})
 	end
 })
+]]
 
 local RenameSection = TabMisc:Section({name = "Rename"})
 
