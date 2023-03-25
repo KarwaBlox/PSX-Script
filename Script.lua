@@ -28,6 +28,9 @@ getgenv().AutoFarmRainbowEvent = false
 getgenv().AreaToTpEvent = nil
 getgenv().AutoRenameRoy = false
 getgenv().RenameName = "CometPet"
+getgenv().AutoFarmComets = false
+getgenv().CometNotify = false
+getgenv().CometWebhook = nil
 
 local SelectedEnchants = {}
 local teleport = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.GUIs.Teleport)
@@ -43,7 +46,7 @@ function BypassAntiCheat()
 	setreadonly(Blunder, false)
 
 	local function OutputData(Message)
-		print(Message .. "\n")
+		return Message
 	end
 
 	Blunder.getAndClear = function(...)
@@ -782,7 +785,7 @@ function FarmComet()
 		local Info = FindComet()
 		local Coinid = Info.CoinId
 		local CometType = Info.Type
-		local Area = Info.AreaId
+		local Area = Info.AreaId 
 		if lib.WorldCmds.Get() ~= Info.WorldId then
 			lib.WorldCmds.Load(Info.WorldId)
 			print("Changing World To "..Info.WorldId)
@@ -792,8 +795,10 @@ function FarmComet()
 			teleport.Teleport(Area, true)
 			lib.Variables.Teleporting = false
 			print("Teleported To "..CometType)
-			JoinCoin(Coinid, GetPetsTable())
-			FarmCoin(Coinid, GetPetsTable())
+			if not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
+				JoinCoin(Coinid, GetPetsTable())
+				FarmCoin(Coinid, GetPetsTable())
+			end
 			print("Farming Comet")
 		end
 	else
@@ -801,6 +806,14 @@ function FarmComet()
 		ServerHop()
 	end
 end
+
+spawn(function()
+	while task.wait(0.1) do
+		if getgenv().AutoFarmComets then
+			FarmComet()
+		end
+	end
+end)
 
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
@@ -1090,3 +1103,9 @@ local RenameSection = TabMisc:Section({name = "Rename"})
 local AutoRenameToggle = RenameSection:Toggle({name = "Auto Rename Royalty & Diams", deafult = ReadSettings("Auto Rename Royalty & Diams"), callback = function(v) getgenv().AutoRenameRoy = v end})
 local RenameName = RenameSection:TextBox({name = "Select Name", deafult = ReadSettings("Select Name"), callback = function(v) getgenv().RenameName = v end})
 local RenameButton = RenameSection:Button({name = "Rename Royalty & Diams", callback = function() RenameAllRoyDiam(getgenv().RenameName) end})
+
+local CometFarmingSection = TabFarm:Section({name = "Comet Farming"})
+
+local AutoFarmComets = CometFarmingSection:Toggle({name = "Auto Farm Comets", deafult = ReadSettings("Auto Farm Comets"), callback = function(v) getgenv().AutoFarmComets = v end})
+local DiscordNotification = CometFarmingSection:Toggle({name = "Send Discord Notification", deafult = ReadSettings("Send Discord Notification"), callback = function(v) getgenv().CometNotify = v end})
+local WebhookTextBox = CometFarmingSection:TextBox({name = "Webhook", deafult = ReadSettings("Webhook"), callback = function(v) getgenv().CometWebhook = v end})
