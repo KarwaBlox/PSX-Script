@@ -60,6 +60,12 @@ function BypassAntiCheat()
 		local args = {...}
 		return table.unpack(args)
 	end)
+	for i, v in pairs(getconstants(lib.WorldCmds.Load)) do
+		if v == "Sound" then
+			setconstant(lib.WorldCmds.Load, i, "ADAWDAWDAW")
+			print(i, v)
+		end
+	end
 end
 
 BypassAntiCheat()
