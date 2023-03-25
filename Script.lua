@@ -48,21 +48,18 @@ function BypassAntiCheat()
 
 	Blunder.getAndClear = function(...)
 		local Packet = ...
-
 		for i,v in next, Packet.list do
 			if v.message ~= "PING" then
 				OutputData(v.message)
 				table.remove(Packet.list, i)
 			end
 		end
-
 		return OldGet(Packet)
 	end
-	for i, v in pairs(getconstants(lib.WorldCmds.Load)) do
-		if v == "Sound" then
-			setconstant(lib.WorldCmds.Load, i, "DAWFAWFAWFAWFAWFAWFAWFAWFAWFAWF")
-		end
-	end
+	local oldaudio = hookfunction(lib.Audio.Play, function(...)
+		local args = {...}
+		return table.unpack(args)
+	end)
 end
 
 BypassAntiCheat()
@@ -493,6 +490,52 @@ spawn(function()
 	end
 end)
 
+--//server hopper
+local Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
+local TeleportService = game:GetService("TeleportService")
+
+local Servers = {}
+for i, v in pairs(Site.data) do
+	if v.playing then
+		local ping = nil
+		if typeof(v.ping) == "number" then
+			ping = v.ping
+		elseif typeof(v.ping) == "table" and typeof(v.ping.total) == "number" then
+			ping = v.ping.total
+		end
+		if ping ~= nil then
+			table.insert(Servers, {ping = ping, server = v})
+		end
+	end
+end
+
+table.sort(Servers, function(a, b)
+	return a.ping < b.ping
+end)
+
+
+
+
+function ServerHop()
+	local HttpService = game:GetService("HttpService")
+	local jobid 
+	local Filename = "NiggaScriptAntiSameServer.json"
+	for i, v in ipairs(Servers) do
+		jobid = v.server.id
+		if isfile(Filename) and jobid ~= HttpService:JSONEncode(Filename) then
+			local server = v.server
+			jobid = v.server.id
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, jobid, LocalPlayer)
+			print(jobid)
+			break
+		end
+	end
+	if (writefile) then
+		json = HttpService:JSONEncode(jobid)
+		writefile(Filename, json)   
+	end
+end
+
 
 getgenv().FarmingMode = "Deafult"
 getgenv().SelectedArea = "Town"
@@ -713,7 +756,42 @@ end
 --	end
 --end)
 
+--//Comet Farming
 
+function FindComet()
+	for i, v in pairs(lib.Network.Invoke("Comets: Get Data")) do
+		if v then
+			return v
+		else
+			return nil
+		end
+	end
+end
+
+function FarmComet()
+	if FindComet() ~= nil then
+		local Info = FindComet()
+		local Coinid = Info.CoinId
+		local CometType = Info.Type
+		local Area = Info.AreaId
+		if lib.WorldCmds.Get() ~= Info.WorldId then
+			lib.WorldCmds.Load(Info.WorldId)
+			print("Changing World To "..Info.WorldId)
+		end
+		if lib.WorldCmds.HasLoaded() then
+			lib.Variables.Teleporting = false
+			teleport.Teleport(Area, true)
+			lib.Variables.Teleporting = false
+			print("Teleported To "..CometType)
+			JoinCoin(Coinid, GetPetsTable())
+			FarmCoin(Coinid, GetPetsTable())
+			print("Farming Comet")
+		end
+	else
+		print("No Comets Found Hopping")
+		ServerHop()
+	end
+end
 
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
