@@ -795,15 +795,18 @@ function FarmComet()
 			teleport.Teleport(Area, true)
 			lib.Variables.Teleporting = false
 			print("Teleported To "..CometType)
-			if not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
+			if lib.Network.Invoke("Get Coins")[Coinid] and not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
 				JoinCoin(Coinid, GetPetsTable())
 				FarmCoin(Coinid, GetPetsTable())
+				print("Farming Comet")
 			end
-			print("Farming Comet")
 		end
 	else
-		print("No Comets Found Hopping")
-		ServerHop()
+		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
+		if #table1 == 0 then
+			print("No Comets Found Hopping")
+			ServerHop()
+		end
 	end
 end
 
