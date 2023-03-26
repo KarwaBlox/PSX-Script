@@ -769,7 +769,7 @@ end
 --//Comet Farming
 
 spawn(function()
-	function FindComet()
+	local function FindComet()
 		local Network = require(game:GetService("ReplicatedStorage").Library.Client.Network)
 		for i, v in pairs(Network.Invoke("Comets: Get Data")) do
 			if v then
