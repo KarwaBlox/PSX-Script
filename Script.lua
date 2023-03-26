@@ -107,6 +107,64 @@ end
 
 BypassAntiCheat()
 
+--//Comet Farming
+
+spawn(function()
+	local Network = require(game:GetService("ReplicatedStorage").Library.Client.Network)
+	local WorldCmds = require(game:GetService("ReplicatedStorage").Library.Client.WorldCmds)
+	local Variables = require(game:GetService("ReplicatedStorage").Library.Variables)
+	local function FindComet()
+		for i, v in pairs(Network.Invoke("Comets: Get Data")) do
+			if v then
+				return v
+			else
+				return nil
+			end
+		end
+	end
+	while task.wait(0.1) do
+		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
+		local Coinid
+		local CometType
+		local Area
+		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
+			if FindComet() ~= nil then
+				local Info = FindComet()
+				if Info ~= nil then
+					Coinid = Info.CoinId
+					CometType = Info.Type
+					Area = Info.AreaId 
+				else
+					ServerHop()
+				end
+				if WorldCmds.Get() ~= Info.WorldId then
+					WorldCmds.Load(Info.WorldId)
+					print("Changing World To "..Info.WorldId)
+				end
+				if WorldCmds.HasLoaded() and #table1 == 0 then
+					Variables.Teleporting = false
+					teleport.Teleport(Area, true)
+					Variables.Teleporting = false
+					print("Teleported To "..CometType)
+					repeat task.wait(0.1) until Network.Invoke("Get Coins")[Coinid]
+					if Network.Invoke("Get Coins")[Coinid] then
+						JoinCoin(Coinid, GetPetsTable())
+						FarmCoin(Coinid, GetPetsTable())
+						print("Farming Comet")
+					end
+					repeat task.wait(0.1) until not Network.Invoke("Get Coins")[Coinid]
+				end
+			else
+				if #table1 == 0 then
+					task.wait(0.2)
+					print("No Comets Found Hopping")
+					ServerHop()
+				end
+			end
+		end
+	end
+end)
+
 local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
 
 function CollectLtbg()
@@ -798,63 +856,6 @@ end
 --	end
 --end)
 
---//Comet Farming
-
-spawn(function()
-	local Network = require(game:GetService("ReplicatedStorage").Library.Client.Network)
-	local WorldCmds = require(game:GetService("ReplicatedStorage").Library.Client.WorldCmds)
-	local Variables = require(game:GetService("ReplicatedStorage").Library.Variables)
-	local function FindComet()
-		for i, v in pairs(Network.Invoke("Comets: Get Data")) do
-			if v then
-				return v
-			else
-				return nil
-			end
-		end
-	end
-	while task.wait(0.1) do
-		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
-		local Coinid
-		local CometType
-		local Area
-		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
-			if FindComet() ~= nil then
-				local Info = FindComet()
-				if Info ~= nil then
-					Coinid = Info.CoinId
-					CometType = Info.Type
-					Area = Info.AreaId 
-				else
-					ServerHop()
-				end
-				if WorldCmds.Get() ~= Info.WorldId then
-					WorldCmds.Load(Info.WorldId)
-					print("Changing World To "..Info.WorldId)
-				end
-				if WorldCmds.HasLoaded() and #table1 == 0 then
-					Variables.Teleporting = false
-					teleport.Teleport(Area, true)
-					Variables.Teleporting = false
-					print("Teleported To "..CometType)
-					repeat task.wait(0.1) until Network.Invoke("Get Coins")[Coinid]
-					if Network.Invoke("Get Coins")[Coinid] then
-						JoinCoin(Coinid, GetPetsTable())
-						FarmCoin(Coinid, GetPetsTable())
-						print("Farming Comet")
-					end
-					repeat task.wait(0.1) until not Network.Invoke("Get Coins")[Coinid]
-				end
-			else
-				if #table1 == 0 then
-					task.wait(0.2)
-					print("No Comets Found Hopping")
-					ServerHop()
-				end
-			end
-		end
-	end
-end)
 
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
