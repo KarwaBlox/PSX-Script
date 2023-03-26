@@ -1,5 +1,5 @@
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/KarwaBlox/UI-Library-Poland-Hub/main/Library.lua')))()
-local lib = require(game.ReplicatedStorage:WaitForChild("Framework"):WaitForChild("Library"))
+local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
 local hoverbrd = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.GUIs.Hoverboards)
 
 
@@ -780,40 +780,39 @@ function FindComet()
 	end
 end
 
-function FarmComet()
-	if FindComet() ~= nil then
-		local Info = FindComet()
-		local Coinid = Info.CoinId
-		local CometType = Info.Type
-		local Area = Info.AreaId 
-		if lib.WorldCmds.Get() ~= Info.WorldId then
-			lib.WorldCmds.Load(Info.WorldId)
-			print("Changing World To "..Info.WorldId)
-		end
-		if lib.WorldCmds.HasLoaded() then
-			lib.Variables.Teleporting = false
-			teleport.Teleport(Area, true)
-			lib.Variables.Teleporting = false
-			print("Teleported To "..CometType)
-			if lib.Network.Invoke("Get Coins")[Coinid] and not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
-				JoinCoin(Coinid, GetPetsTable())
-				FarmCoin(Coinid, GetPetsTable())
-				print("Farming Comet")
-			end
-		end
-	else
-		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
-		if #table1 == 0 then
-			print("No Comets Found Hopping")
-			ServerHop()
-		end
-	end
-end
+
 
 spawn(function()
 	while task.wait(0.1) do
 		if getgenv().AutoFarmComets then
-			FarmComet()
+			if FindComet() ~= nil then
+				local Info = FindComet()
+				local Coinid = Info.CoinId
+				local CometType = Info.Type
+				local Area = Info.AreaId 
+				if lib.WorldCmds.Get() ~= Info.WorldId then
+					lib.WorldCmds.Load(Info.WorldId)
+					print("Changing World To "..Info.WorldId)
+				end
+				if lib.WorldCmds.HasLoaded() then
+					lib.Variables.Teleporting = false
+					teleport.Teleport(Area, true)
+					lib.Variables.Teleporting = false
+					print("Teleported To "..CometType)
+					if lib.Network.Invoke("Get Coins")[Coinid] and not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
+						JoinCoin(Coinid, GetPetsTable())
+						FarmCoin(Coinid, GetPetsTable())
+						print("Farming Comet")
+					end
+					repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
+				end
+			else
+				local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
+				if #table1 == 0 then
+					print("No Comets Found Hopping")
+					ServerHop()
+				end
+			end
 		end
 	end
 end)
