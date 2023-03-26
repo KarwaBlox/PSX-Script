@@ -510,7 +510,7 @@ local TeleportService = game:GetService("TeleportService")
 function ServerHop()
 	local Servers = {}
 	for i, v in pairs(Site.data) do
-		if v.playing then
+		if v.playing and v.playing ~= v.maxPlayers then
 			local ping = nil
 			if typeof(v.ping) == "number" then
 				ping = v.ping
