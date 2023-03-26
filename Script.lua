@@ -88,7 +88,8 @@ function BypassAntiCheat()
 		end
 		return OldGet(Packet)
 	end
-	local old1 = hookfunction(lib.Audio.Play, function(sound, ...)
+	local Audio = require(game:GetService("ReplicatedStorage").Library.Audio)
+	local old1 = hookfunction(Audio.Play, function(sound, ...)
 		return {
 			Play = function()
 				print("Fake sound played")
