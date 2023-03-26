@@ -781,6 +781,7 @@ end
 
 spawn(function()
 	while task.wait(0) do
+		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
 		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
 			if FindComet() ~= nil then
 				local Info = FindComet()
@@ -791,7 +792,7 @@ spawn(function()
 					lib.WorldCmds.Load(Info.WorldId)
 					print("Changing World To "..Info.WorldId)
 				end
-				if lib.WorldCmds.HasLoaded() then
+				if lib.WorldCmds.HasLoaded() and #table1 == 0 then
 					lib.Variables.Teleporting = false
 					teleport.Teleport(Area, true)
 					lib.Variables.Teleporting = false
@@ -805,7 +806,6 @@ spawn(function()
 					repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
 				end
 			else
-				local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
 				if #table1 == 0 then
 					task.wait(0.2)
 					print("No Comets Found Hopping")
