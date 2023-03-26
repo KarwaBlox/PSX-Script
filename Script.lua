@@ -107,6 +107,49 @@ end
 
 BypassAntiCheat()
 
+--//server hopper
+local HttpService = game:GetService("HttpService")
+local Site = HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
+local TeleportService = game:GetService("TeleportService")
+
+function ServerHop()
+	local Servers = {}
+	for i, v in pairs(Site.data) do
+		if v.playing and v.playing ~= v.maxPlayers then
+			local ping = nil
+			if typeof(v.ping) == "number" then
+				ping = v.ping
+			elseif typeof(v.ping) == "table" and typeof(v.ping.total) == "number" then
+				ping = v.ping.total
+			end
+			if ping ~= nil then
+				table.insert(Servers, {ping = ping, server = v})
+			end
+		end
+	end
+	table.sort(Servers, function(a, b)
+		return a.ping < b.ping
+	end)
+	local jobid 
+	local playerplaying
+	local Filename = "NiggaScriptAntiSameServer.json"
+	for i, v in ipairs(Servers) do
+		jobid = v.server.id
+		playerplaying = v.server.playing
+		if isfile(Filename) and jobid ~= HttpService:JSONEncode(Filename) then
+			local server = v.server
+			jobid = v.server.id
+			TeleportService:TeleportToPlaceInstance(game.PlaceId, jobid, LocalPlayer)
+			print(jobid)
+			break
+		end
+	end
+	if (writefile) then
+		json = HttpService:JSONEncode(jobid)
+		writefile(Filename, json)   
+	end
+end
+
 --//Comet Farming
 
 spawn(function()
@@ -592,49 +635,6 @@ spawn(function()
 		end
 	end
 end)
-
---//server hopper
-local HttpService = game:GetService("HttpService")
-local Site = HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
-local TeleportService = game:GetService("TeleportService")
-
-function ServerHop()
-	local Servers = {}
-	for i, v in pairs(Site.data) do
-		if v.playing and v.playing ~= v.maxPlayers then
-			local ping = nil
-			if typeof(v.ping) == "number" then
-				ping = v.ping
-			elseif typeof(v.ping) == "table" and typeof(v.ping.total) == "number" then
-				ping = v.ping.total
-			end
-			if ping ~= nil then
-				table.insert(Servers, {ping = ping, server = v})
-			end
-		end
-	end
-	table.sort(Servers, function(a, b)
-		return a.ping < b.ping
-	end)
-	local jobid 
-	local playerplaying
-	local Filename = "NiggaScriptAntiSameServer.json"
-	for i, v in ipairs(Servers) do
-		jobid = v.server.id
-		playerplaying = v.server.playing
-		if isfile(Filename) and jobid ~= HttpService:JSONEncode(Filename) then
-			local server = v.server
-			jobid = v.server.id
-			TeleportService:TeleportToPlaceInstance(game.PlaceId, jobid, LocalPlayer)
-			print(jobid)
-			break
-		end
-	end
-	if (writefile) then
-		json = HttpService:JSONEncode(jobid)
-		writefile(Filename, json)   
-	end
-end
 
 
 getgenv().FarmingMode = "Deafult"
