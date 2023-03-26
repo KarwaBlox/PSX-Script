@@ -180,7 +180,7 @@ spawn(function()
 				else
 					ServerHop()
 				end
-				if WorldCmds.Get() ~= Info.WorldId then
+				if WorldCmds.HasLoaded() and WorldCmds.Get() ~= Info.WorldId then
 					WorldCmds.Load(Info.WorldId)
 					print("Changing World To "..Info.WorldId)
 				end
