@@ -1,7 +1,36 @@
-local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
+
 local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/KarwaBlox/UI-Library-Poland-Hub/main/Library.lua')))()
 local hoverbrd = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.GUIs.Hoverboards)
 
+
+local Filename = "PSXsettings.json"
+local json
+function CreateSettings()
+	local HttpService = game:GetService("HttpService")
+	if (isfolder) and (makefolder) then
+		makefolder("NiggaScript")
+	end
+	if (writefile) then
+		json = HttpService:JSONEncode(main.Config)
+		writefile(Filename, json)   
+	end
+end
+
+
+function ReadSettings(index)
+	local HttpService = game:GetService("HttpService")
+	local value
+	if (readfile and isfile) and isfile(Filename) then
+		local settingsTable = json
+		settingsTable = HttpService:JSONDecode(readfile(Filename))
+		for i, v in pairs(settingsTable) do
+			if i == index then
+				value = v
+			end
+		end
+		return value
+	end
+end
 
 --Services
 local TeleportService = game:GetService("TeleportService")
@@ -76,6 +105,8 @@ function BypassAntiCheat()
 end
 
 BypassAntiCheat()
+
+local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
 
 function CollectLtbg()
 	for i, v in pairs(game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()) do	
@@ -827,35 +858,6 @@ end)
 Playerdisplay = game.Players.LocalPlayer.DisplayName
 
 local main = Library:New({name = "Nigga Script | Pet Simulator X |"})
-
-local Filename = "PSXsettings.json"
-local json
-function CreateSettings()
-	local HttpService = game:GetService("HttpService")
-	if (isfolder) and (makefolder) then
-		makefolder("NiggaScript")
-	end
-	if (writefile) then
-		json = HttpService:JSONEncode(main.Config)
-		writefile(Filename, json)   
-	end
-end
-
-
-function ReadSettings(index)
-	local HttpService = game:GetService("HttpService")
-	local value
-	if (readfile and isfile) and isfile(Filename) then
-		local settingsTable = json
-		settingsTable = HttpService:JSONDecode(readfile(Filename))
-		for i, v in pairs(settingsTable) do
-			if i == index then
-				value = v
-			end
-		end
-		return value
-	end
-end
 
 
 local Tab = main:CreateTab({
