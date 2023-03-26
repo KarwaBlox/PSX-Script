@@ -156,7 +156,14 @@ spawn(function()
 	local Network = require(game:GetService("ReplicatedStorage").Library.Client.Network)
 	local WorldCmds = require(game:GetService("ReplicatedStorage").Library.Client.WorldCmds)
 	local Variables = require(game:GetService("ReplicatedStorage").Library.Variables)
-	repeat task.wait() until game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game.Comets
+	local function CheckForCometsScript()
+		if game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.Game.Comets then 
+			return true
+		else
+			return false
+		end
+	end
+	repeat task.wait() until CheckForCometsScript()
 	print("Comet Scripts Loaded")
 	local function FindComet()
 		for i, v in pairs(Network.Invoke("Comets: Get Data")) do
