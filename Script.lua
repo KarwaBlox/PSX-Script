@@ -780,24 +780,30 @@ end
 
 
 spawn(function()
-	while task.wait(0.1) do
+	while task.wait(0) do
 		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
 			if FindComet() ~= nil then
 				local Info = FindComet()
 				local Coinid = Info.CoinId
 				local CometType = Info.Type
 				local Area = Info.AreaId 
-				lib.Variables.Teleporting = false
-				teleport.Teleport(Area, true)
-				lib.Variables.Teleporting = false
-				print("Teleported To "..CometType)
-				repeat task.wait(0.1) until lib.Network.Invoke("Get Coins")[Coinid]
-				if lib.Network.Invoke("Get Coins")[Coinid] then
-					JoinCoin(Coinid, GetPetsTable())
-					FarmCoin(Coinid, GetPetsTable())
-					print("Farming Comet")
+				if lib.WorldCmds.Get() ~= Info.WorldId then
+					lib.WorldCmds.Load(Info.WorldId)
+					print("Changing World To "..Info.WorldId)
 				end
-				repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
+				if lib.WorldCmds.HasLoaded() then
+					lib.Variables.Teleporting = false
+					teleport.Teleport(Area, true)
+					lib.Variables.Teleporting = false
+					print("Teleported To "..CometType)
+					repeat task.wait(0.1) until lib.Network.Invoke("Get Coins")[Coinid]
+					if lib.Network.Invoke("Get Coins")[Coinid] then
+						JoinCoin(Coinid, GetPetsTable())
+						FarmCoin(Coinid, GetPetsTable())
+						print("Farming Comet")
+					end
+					repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
+				end
 			else
 				local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
 				if #table1 == 0 then
