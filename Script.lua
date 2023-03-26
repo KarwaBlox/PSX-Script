@@ -503,37 +503,34 @@ spawn(function()
 end)
 
 --//server hopper
-local Site = game.HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
+local HttpService = game:GetService("HttpService")
+local Site = HttpService:JSONDecode(game:HttpGet('https://games.roblox.com/v1/games/' .. game.PlaceId .. '/servers/Public?sortOrder=Asc&limit=100'))
 local TeleportService = game:GetService("TeleportService")
 
-local Servers = {}
-for i, v in pairs(Site.data) do
-	if v.playing then
-		local ping = nil
-		if typeof(v.ping) == "number" then
-			ping = v.ping
-		elseif typeof(v.ping) == "table" and typeof(v.ping.total) == "number" then
-			ping = v.ping.total
-		end
-		if ping ~= nil then
-			table.insert(Servers, {ping = ping, server = v})
+function ServerHop()
+	local Servers = {}
+	for i, v in pairs(Site.data) do
+		if v.playing then
+			local ping = nil
+			if typeof(v.ping) == "number" then
+				ping = v.ping
+			elseif typeof(v.ping) == "table" and typeof(v.ping.total) == "number" then
+				ping = v.ping.total
+			end
+			if ping ~= nil then
+				table.insert(Servers, {ping = ping, server = v})
+			end
 		end
 	end
-end
-
-table.sort(Servers, function(a, b)
-	return a.ping < b.ping
-end)
-
-
-
-
-function ServerHop()
-	local HttpService = game:GetService("HttpService")
+	table.sort(Servers, function(a, b)
+		return a.ping < b.ping
+	end)
 	local jobid 
+	local playerplaying
 	local Filename = "NiggaScriptAntiSameServer.json"
 	for i, v in ipairs(Servers) do
 		jobid = v.server.id
+		playerplaying = v.server.playing
 		if isfile(Filename) and jobid ~= HttpService:JSONEncode(Filename) then
 			local server = v.server
 			jobid = v.server.id
@@ -809,6 +806,7 @@ spawn(function()
 			else
 				local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
 				if #table1 == 0 then
+					task.wait(0.2)
 					print("No Comets Found Hopping")
 					ServerHop()
 				end
