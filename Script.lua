@@ -1,5 +1,5 @@
-local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/KarwaBlox/UI-Library-Poland-Hub/main/Library.lua')))()
 local lib = require(game:GetService("ReplicatedStorage").Framework.Library)
+local Library = loadstring(game:HttpGet(('https://raw.githubusercontent.com/KarwaBlox/UI-Library-Poland-Hub/main/Library.lua')))()
 local hoverbrd = getsenv(game:GetService("Players").LocalPlayer.PlayerScripts.Scripts.GUIs.Hoverboards)
 
 
@@ -796,7 +796,8 @@ spawn(function()
 					teleport.Teleport(Area, true)
 					lib.Variables.Teleporting = false
 					print("Teleported To "..CometType)
-					if lib.Network.Invoke("Get Coins")[Coinid] and not table.find(lib.Network.Invoke("Get Coins")[Coinid].petsFarming, GetPetsTable()[1]) then
+					repeat task.wait(0.1) until lib.Network.Invoke("Get Coins")[Coinid]
+					if lib.Network.Invoke("Get Coins")[Coinid] then
 						JoinCoin(Coinid, GetPetsTable())
 						FarmCoin(Coinid, GetPetsTable())
 						print("Farming Comet")
@@ -1109,3 +1110,4 @@ local CometFarmingSection = TabFarm:Section({name = "Comet Farming"})
 local AutoFarmComets = CometFarmingSection:Toggle({name = "Auto Farm Comets", deafult = ReadSettings("Auto Farm Comets"), callback = function(v) getgenv().AutoFarmComets = v end})
 local DiscordNotification = CometFarmingSection:Toggle({name = "Send Discord Notification", deafult = ReadSettings("Send Discord Notification"), callback = function(v) getgenv().CometNotify = v end})
 local WebhookTextBox = CometFarmingSection:TextBox({name = "Webhook", deafult = ReadSettings("Webhook"), callback = function(v) getgenv().CometWebhook = v end})
+print("Nigga Script Executed")
