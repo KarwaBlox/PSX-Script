@@ -72,6 +72,7 @@ function BypassAntiCheat()
 			end
 		}
 	end)
+	print("Hooked Functions")
 end
 
 BypassAntiCheat()
@@ -767,27 +768,32 @@ end
 
 --//Comet Farming
 
-function FindComet()
-	for i, v in pairs(lib.Network.Invoke("Comets: Get Data")) do
-		if v then
-			return v
-		else
-			return nil
+spawn(function()
+	function FindComet()
+		local Network = require(game:GetService("ReplicatedStorage").Library.Network)
+		for i, v in pairs(Network.Invoke("Comets: Get Data")) do
+			if v then
+				return v
+			else
+				return nil
+			end
 		end
 	end
-end
-
-
-
-spawn(function()
 	while task.wait(0) do
 		local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
+		local Coinid
+		local CometType
+		local Area
 		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
 			if FindComet() ~= nil then
 				local Info = FindComet()
-				local Coinid = Info.CoinId
-				local CometType = Info.Type
-				local Area = Info.AreaId 
+				if Info ~= nil then
+					Coinid = Info.CoinId
+					CometType = Info.Type
+					Area = Info.AreaId 
+				else
+					ServerHop()
+				end
 				if lib.WorldCmds.Get() ~= Info.WorldId then
 					lib.WorldCmds.Load(Info.WorldId)
 					print("Changing World To "..Info.WorldId)
