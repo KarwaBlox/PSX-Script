@@ -787,23 +787,17 @@ spawn(function()
 				local Coinid = Info.CoinId
 				local CometType = Info.Type
 				local Area = Info.AreaId 
-				if lib.WorldCmds.Get() ~= Info.WorldId then
-					lib.WorldCmds.Load(Info.WorldId)
-					print("Changing World To "..Info.WorldId)
+				lib.Variables.Teleporting = false
+				teleport.Teleport(Area, true)
+				lib.Variables.Teleporting = false
+				print("Teleported To "..CometType)
+				repeat task.wait(0.1) until lib.Network.Invoke("Get Coins")[Coinid]
+				if lib.Network.Invoke("Get Coins")[Coinid] then
+					JoinCoin(Coinid, GetPetsTable())
+					FarmCoin(Coinid, GetPetsTable())
+					print("Farming Comet")
 				end
-				if lib.WorldCmds.HasLoaded() then
-					lib.Variables.Teleporting = false
-					teleport.Teleport(Area, true)
-					lib.Variables.Teleporting = false
-					print("Teleported To "..CometType)
-					repeat task.wait(0.1) until lib.Network.Invoke("Get Coins")[Coinid]
-					if lib.Network.Invoke("Get Coins")[Coinid] then
-						JoinCoin(Coinid, GetPetsTable())
-						FarmCoin(Coinid, GetPetsTable())
-						print("Farming Comet")
-					end
-					repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
-				end
+				repeat task.wait(0.1) until not lib.Network.Invoke("Get Coins")[Coinid]
 			else
 				local table1 = game:GetService("Workspace")["__THINGS"].Lootbags:GetChildren()
 				if #table1 == 0 then
