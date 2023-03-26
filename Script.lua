@@ -781,7 +781,7 @@ end
 
 spawn(function()
 	while task.wait(0.1) do
-		if getgenv().AutoFarmComets then
+		if getgenv().AutoFarmComets or ReadSettings("Auto Farm Comets") then
 			if FindComet() ~= nil then
 				local Info = FindComet()
 				local Coinid = Info.CoinId
